@@ -9,6 +9,20 @@ var router = express.Router();
 
 /* GET customers with orders page. */
 router.get('/customers', async function(req, res, next) {
+  let myOrder = await Order.create({
+    // (id, customerid,price)
+    // (1,1,20,'2022-01-01 00:00:00','2022-01-01 00:00:00')
+    CustomerId: 1,
+    totalprice: 20
+  })
+  let orderDetails = await OrderDetails.create({
+    OrderId: myOrder.id,
+    ProductId: 1,
+    quantity: 2,
+    price: 10
+  });
+  console.log(orderDetails);
+  console.log(myOrder);
     let customers = await Customer.findAll({
         // required: true means INNER JOIN, brings data as where written on the db
         // required: false means OUTER JOIN, brings data as ORDER BY DESC
@@ -19,6 +33,7 @@ router.get('/customers', async function(req, res, next) {
           required: true, 
           include: {
             model: Product,
+            through: { attributes: ['quantity'], required: true },
             attributes: ['id', 'name', 'price', 'description'],
             required: true
           } 
@@ -32,7 +47,7 @@ router.get('/orders', async function(req, res, next) {
     let orders = await Order.findAll({
         include: { 
           model: Product,
-          through: { attributes: ['quantity']},
+          through: { attributes: ['quantity'], required: true},
           attributes: ['id', 'name', 'price', 'description'],
           required: true
         }
